@@ -73,7 +73,30 @@ export async function executeGeoGebraCommand(command: string): Promise<boolean> 
       await waitForGeoGebra()
     }
     
-    window.ggbApplet.evalCommand(command)
+    // 过滤注释：移除 # 或 // 及其后的所有内容
+    let cleanCommand = command.trim()
+    const hashIndex = cleanCommand.indexOf('#')
+    const slashIndex = cleanCommand.indexOf('//')
+    
+    let commentIndex = -1
+    if (hashIndex !== -1 && slashIndex !== -1) {
+      commentIndex = Math.min(hashIndex, slashIndex)
+    } else if (hashIndex !== -1) {
+      commentIndex = hashIndex
+    } else if (slashIndex !== -1) {
+      commentIndex = slashIndex
+    }
+    
+    if (commentIndex !== -1) {
+      cleanCommand = cleanCommand.substring(0, commentIndex).trim()
+    }
+    
+    // 如果注释后为空，跳过执行
+    if (!cleanCommand) {
+      return true
+    }
+    
+    window.ggbApplet.evalCommand(cleanCommand)
     return true
   } catch (error) {
     console.error(`[GeoGebra Helper] 执行命令失败: "${command}"`, error)

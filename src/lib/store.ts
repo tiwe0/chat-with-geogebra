@@ -9,6 +9,8 @@ export type ApiKeys = {
   openai?: string
   anthropic?: string
   deepseek?: string
+  zzseek?: string
+  zzseekBaseUrl?: string
 }
 
 export type ConfigSettings = {
@@ -36,6 +38,8 @@ const DEFAULT_CONFIG: ConfigSettings = {
     openai: "",
     anthropic: "",
     deepseek: "",
+    zzseek: "",
+    zzseekBaseUrl: "",
   },
   systemPrompt: `你是一个专业的数学和几何学助手，擅长使用 GeoGebra 创建几何图形、函数图像和动态动画。
 

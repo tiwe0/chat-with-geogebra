@@ -164,7 +164,12 @@ ${message.content}`
 
     while ((codeMatch = codeBlockRegex.exec(content)) !== null) {
       console.log("[提取命令] 找到 geogebra 代码块:", codeMatch[1])
-      const commands = codeMatch[1].split("\n").filter((line) => line.trim() !== "")
+      const commands = codeMatch[1].split("\n")
+        .map(line => line.trim())
+        .filter((line) => {
+          // 过滤空行和注释行（# 或 //）
+          return line !== "" && !line.startsWith('#') && !line.startsWith('//')
+        })
       console.log("[提取命令] 代码块中的命令数:", commands.length, commands)
       ggbCommands.push(...commands)
     }
@@ -676,6 +681,22 @@ ${message.content}`
                     </div>
                   )
                 })}
+                {isLoading && (
+                  <div className="flex justify-start mb-3">
+                    <div className="flex items-start gap-2 max-w-[85%]">
+                      <div className="bg-muted text-muted-foreground rounded-lg px-4 py-3 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <span className="animate-bounce inline-block w-2 h-2 bg-current rounded-full" style={{ animationDelay: '0ms' }}></span>
+                            <span className="animate-bounce inline-block w-2 h-2 bg-current rounded-full" style={{ animationDelay: '150ms' }}></span>
+                            <span className="animate-bounce inline-block w-2 h-2 bg-current rounded-full" style={{ animationDelay: '300ms' }}></span>
+                          </div>
+                          <span className="text-sm">AI 正在思考...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
             )}

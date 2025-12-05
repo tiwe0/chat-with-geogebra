@@ -12,15 +12,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Sun, Moon, Monitor } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAppStore } from "@/lib/store"
+import { useTheme } from "@/components/theme-provider"
 
 export type ApiKeys = {
   openai?: string
   anthropic?: string
   deepseek?: string
+  zzseek?: string
+  zzseekBaseUrl?: string
 }
 
 export type ConfigSettings = {
@@ -44,14 +47,18 @@ const MODEL_OPTIONS = [
   { value: "claude-3-haiku", label: "Claude 3 Haiku", provider: "anthropic" },
   { value: "deepseek-chat", label: "DeepSeek Chat", provider: "deepseek" },
   { value: "deepseek-coder", label: "DeepSeek Coder", provider: "deepseek" },
+  { value: "zzseek", label: "ZZSeek", provider: "zzseek" },
   { value: "llama-3", label: "Llama 3", provider: "openai" },
 ]
 
 export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) {
-  // 从store获取配置
+  // 从 store 获取配置
   const config = useAppStore((state) => state.config)
   const updateConfig = useAppStore((state) => state.updateConfig)
   const updateApiKey = useAppStore((state) => state.updateApiKey)
+  
+  // 主题相关
+  const { theme, setTheme } = useTheme()
 
   // 本地状态用于表单
   const [localConfig, setLocalConfig] = useState<ConfigSettings>(config)
@@ -125,10 +132,11 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="model">模型</TabsTrigger>
             <TabsTrigger value="keys">API 密钥</TabsTrigger>
             <TabsTrigger value="prompt">系统提示词</TabsTrigger>
+            <TabsTrigger value="appearance">外观</TabsTrigger>
           </TabsList>
 
           <TabsContent value="model" className="space-y-4 py-4">
@@ -219,6 +227,51 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
                 />
               </div>
             </div>
+
+            <div className="border-t pt-4 mt-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="zzseekKey" className="text-right">
+                  ZZSeek API
+                </Label>
+                <div className="col-span-3">
+                  <Input
+                    id="zzseekKey"
+                    type="password"
+                    value={localConfig.apiKeys.zzseek || ""}
+                    onChange={(e) =>
+                      setLocalConfig({
+                        ...localConfig,
+                        apiKeys: { ...localConfig.apiKeys, zzseek: e.target.value },
+                      })
+                    }
+                    placeholder="输入 ZZSeek API 密钥"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4 mt-4">
+                <Label htmlFor="zzseekBaseUrl" className="text-right">
+                  ZZSeek URL
+                </Label>
+                <div className="col-span-3">
+                  <Input
+                    id="zzseekBaseUrl"
+                    type="text"
+                    value={localConfig.apiKeys.zzseekBaseUrl || ""}
+                    onChange={(e) =>
+                      setLocalConfig({
+                        ...localConfig,
+                        apiKeys: { ...localConfig.apiKeys, zzseekBaseUrl: e.target.value },
+                      })
+                    }
+                    placeholder="https://your-zzseek-api.com/v1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    填写你的 ZZSeek 后端地址
+                  </p>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="prompt" className="space-y-4 py-4">
@@ -235,6 +288,46 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
                   className="min-h-[150px]"
                 />
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="appearance" className="space-y-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">
+                主题
+              </Label>
+              <div className="col-span-3 flex gap-2">
+                <Button
+                  variant={theme === "light" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("light")}
+                  className="flex-1"
+                >
+                  <Sun className="h-4 w-4 mr-2" />
+                  浅色
+                </Button>
+                <Button
+                  variant={theme === "dark" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("dark")}
+                  className="flex-1"
+                >
+                  <Moon className="h-4 w-4 mr-2" />
+                  深色
+                </Button>
+                <Button
+                  variant={theme === "system" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("system")}
+                  className="flex-1"
+                >
+                  <Monitor className="h-4 w-4 mr-2" />
+                  系统
+                </Button>
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground text-center">
+              当前主题: {theme === "light" ? "浅色" : theme === "dark" ? "深色" : "跟随系统"}
             </div>
           </TabsContent>
         </Tabs>

@@ -230,14 +230,28 @@ const SYNTAX_CHECKS = [
  */
 export function validateCommand(command: string): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const trimmedCmd = command.trim();
+  let trimmedCmd = command.trim();
   
+  // 过滤注释：移除 # 或 // 及其后的所有内容
+  const hashIndex = trimmedCmd.indexOf('#');
+  const slashIndex = trimmedCmd.indexOf('//');
+  
+  let commentIndex = -1;
+  if (hashIndex !== -1 && slashIndex !== -1) {
+    commentIndex = Math.min(hashIndex, slashIndex);
+  } else if (hashIndex !== -1) {
+    commentIndex = hashIndex;
+  } else if (slashIndex !== -1) {
+    commentIndex = slashIndex;
+  }
+  
+  if (commentIndex !== -1) {
+    trimmedCmd = trimmedCmd.substring(0, commentIndex).trim();
+  }
+  
+  // 如果注释后为空，直接返回空数组（不报错）
   if (!trimmedCmd) {
-    return [{
-      severity: 'error',
-      message: '命令为空',
-      command: trimmedCmd,
-    }];
+    return [];
   }
   
   // 1. 检查常见错误模式（避免重复检测）
@@ -303,6 +317,12 @@ export function validateCommands(commands: string[]): ValidationResult {
   const fixedCommands: string[] = [];
   
   commands.forEach((cmd, index) => {
+    // 过滤空行和纯注释行（# 或 //）
+    const trimmed = cmd.trim();
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//')) {
+      return; // 跳过此行，不添加到 fixedCommands
+    }
+    
     const issues = validateCommand(cmd);
     
     // 添加行号信息
@@ -316,6 +336,7 @@ export function validateCommands(commands: string[]): ValidationResult {
     if (errorIssue?.fixedCommand) {
       fixedCommands.push(errorIssue.fixedCommand);
     } else {
+      // 只有非注释行才添加到 fixedCommands
       fixedCommands.push(cmd);
     }
   });
@@ -341,7 +362,12 @@ export function extractAndValidateCommands(text: string): ValidationResult {
   
   while ((match = codeBlockRegex.exec(text)) !== null) {
     const blockContent = match[1].trim();
-    const lines = blockContent.split('\n').map(line => line.trim()).filter(line => line);
+    const lines = blockContent.split('\n')
+      .map(line => line.trim())
+      .filter(line => {
+        // 过滤空行和以 # 或 // 开头的注释行
+        return line && !line.startsWith('#') && !line.startsWith('//');
+      });
     commands.push(...lines);
   }
   
