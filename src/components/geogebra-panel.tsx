@@ -1,28 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import Geogebra from "react-geogebra"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { CommandHelpPanel } from "@/components/command-help-panel"
 
 interface GeogebraPanelProps {
   onClose: () => void
   onExecuteLatestCommands: () => void
   onDebug: () => void
+  onInsertCommand?: (command: string) => void
 }
 
-export function GeogebraPanel({ onClose, onExecuteLatestCommands, onDebug }: GeogebraPanelProps) {
+export function GeogebraPanel({ onClose, onExecuteLatestCommands, onDebug, onInsertCommand }: GeogebraPanelProps) {
   const [key, setKey] = useState(0) // 用于强制重建
   const appRef = useRef<any>(null)
-  
-  // 重置 GeoGebra（清空内容）
-  const handleReset = useCallback(() => {
-    if (appRef.current) {
-      try {
-        appRef.current.reset()
-        console.log("[GeoGebra] 内容已清空")
-      } catch (error) {
-        console.error("[GeoGebra] 清空失败:", error)
-      }
-    }
-  }, [])
+  const [activeTab, setActiveTab] = useState("canvas")
   
   // 重建 GeoGebra
   const handleRecreate = useCallback(() => {
@@ -114,14 +106,6 @@ export function GeogebraPanel({ onClose, onExecuteLatestCommands, onDebug }: Geo
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={handleReset} 
-            className="h-8"
-          >
-            清理
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
             onClick={onClose} 
             className="h-8"
           >
@@ -129,41 +113,72 @@ export function GeogebraPanel({ onClose, onExecuteLatestCommands, onDebug }: Geo
           </Button>
         </div>
       </div>
-      <div className="w-full h-full relative">
-        <Geogebra
-          key={key}
-          id="ggb-element"
-          appName="classic"
-          showToolBar={true}
-          showAlgebraInput={true}
-          showMenuBar={true}
-          enableLabelDrags={false}
-          enableShiftDragZoom={true}
-          enableRightClick={true}
-          showResetIcon={true}
-          allowStyleBar={false}
-          appletOnLoad={() => {
-            console.log("[GeoGebra] React GeoGebra appletOnLoad 回调")
-            // 立即设置大小
-            setTimeout(() => {
-              const panel = document.getElementById("geogebra-panel")
-              const title = document.getElementById("geogebra-title")
-              
-              if (panel && title && window.ggbApplet && typeof window.ggbApplet.setSize === 'function') {
-                const width = panel.clientWidth
-                const height = panel.clientHeight - title.clientHeight
-                console.log(`[GeoGebra] 初始化大小: ${width}x${height}`)
-                
-                try {
-                  window.ggbApplet.setSize(width, height)
-                } catch (error) {
-                  console.error("[GeoGebra] 初始化设置大小失败:", error)
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <TabsList className="mx-4 mt-2">
+          <TabsTrigger value="canvas">画布</TabsTrigger>
+          <TabsTrigger value="help">命令帮助</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="canvas" className="flex-1 m-0 data-[state=active]:flex">
+          <div className="w-full h-full relative">
+            <Geogebra
+              key={key}
+              id="ggb-element"
+              appName="classic"
+              showToolBar={true}
+              showAlgebraInput={true}
+              showMenuBar={true}
+              enableLabelDrags={false}
+              enableShiftDragZoom={true}
+              enableRightClick={true}
+              showResetIcon={true}
+              allowStyleBar={false}
+              appletOnLoad={() => {
+                console.log("[GeoGebra] React GeoGebra appletOnLoad 回调")
+                // 立即设置大小
+                setTimeout(() => {
+                  const panel = document.getElementById("geogebra-panel")
+                  const title = document.getElementById("geogebra-title")
+                  
+                  if (panel && title && window.ggbApplet && typeof window.ggbApplet.setSize === 'function') {
+                    const width = panel.clientWidth
+                    const height = panel.clientHeight - title.clientHeight - 48 // 减去标签栏高度
+                    console.log(`[GeoGebra] 初始化大小: ${width}x${height}`)
+                    
+                    try {
+                      window.ggbApplet.setSize(width, height)
+                    } catch (error) {
+                      console.error("[GeoGebra] 初始化设置大小失败:", error)
+                    }
+                  }
+                }, 100)
+              }}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="help" className="flex-1 m-0 overflow-hidden data-[state=active]:flex">
+          <CommandHelpPanel 
+            onInsertCommand={(cmd) => {
+              if (onInsertCommand) {
+                onInsertCommand(cmd)
+              } else {
+                // 直接在 GeoGebra 中执行
+                if (window.ggbApplet) {
+                  try {
+                    window.ggbApplet.evalCommand(cmd)
+                    console.log(`[GeoGebra] 执行命令: ${cmd}`)
+                  } catch (error) {
+                    console.error(`[GeoGebra] 执行命令失败: ${cmd}`, error)
+                  }
                 }
               }
-            }, 100)
-          }}
-        />
-      </div>
+            }}
+          />
+        </TabsContent>
+      </Tabs>
+      
       <style dangerouslySetInnerHTML={{
         __html: `
           #ggb-element-holder { width: 100% !important; height: 100% !important; }

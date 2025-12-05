@@ -132,11 +132,12 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 w-full">
+          <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="model">模型</TabsTrigger>
             <TabsTrigger value="keys">API 密钥</TabsTrigger>
             <TabsTrigger value="prompt">系统提示词</TabsTrigger>
             <TabsTrigger value="appearance">外观</TabsTrigger>
+            <TabsTrigger value="about">关于</TabsTrigger>
           </TabsList>
 
           <TabsContent value="model" className="space-y-4 py-4">
@@ -328,6 +329,68 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
             </div>
             <div className="text-sm text-muted-foreground text-center">
               当前主题: {theme === "light" ? "浅色" : theme === "dark" ? "深色" : "跟随系统"}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="about" className="space-y-4 py-4">
+            <div className="space-y-4">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="text-2xl font-bold">🧮 GeoGebra 聊天助手</div>
+                <div className="text-sm text-muted-foreground">Version 0.2.0</div>
+              </div>
+
+              <div className="border-t pt-4 space-y-3">
+                <div>
+                  <div className="text-sm font-semibold mb-1">项目介绍</div>
+                  <p className="text-xs text-muted-foreground">
+                    基于 AI 的 GeoGebra 数学工具，结合大语言模型与交互式几何画板，为数学学习提供智能辅助。
+                  </p>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold mb-1">功能特性</div>
+                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>多模型支持：OpenAI、Claude、DeepSeek、自部署</li>
+                    <li>GeoGebra 命令语法验证与实时执行</li>
+                    <li>交互式几何画板与命令帮助</li>
+                    <li>多对话管理与历史记录</li>
+                    <li>深色/浅色主题切换</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold mb-1">技术栈</div>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="text-xs bg-muted px-2 py-1 rounded">React</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">TypeScript</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">Vite</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">Tailwind CSS</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">Zustand</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">AI SDK</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold mb-1">开源协议</div>
+                  <p className="text-xs text-muted-foreground">
+                    MIT License © 2025
+                  </p>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold mb-1">联系方式</div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <div>👨‍💻 GitHub: <a href="https://github.com/tiwe0/chat-with-geogebra" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">tiwe0/chat-with-geogebra</a></div>
+                    <div>📧 问题反馈: <a href="https://github.com/tiwe0/chat-with-geogebra/issues" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub Issues</a></div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-3">
+                  <div className="text-xs text-center text-muted-foreground">
+                    感谢使用 GeoGebra 聊天助手 🚀
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>

@@ -18,6 +18,7 @@ import { ChevronDown, ChevronUp, Code, Sparkles } from "lucide-react"
 import { useState, useCallback } from "react"
 import { validateCommands, autoFixCommand, type ValidationIssue } from "@/lib/geogebra-validator"
 import type { Message } from "@ai-sdk/react"
+import { Badge } from "@/components/ui/badge"
 
 // Chat interface component
 export function ChatInterface({
@@ -43,10 +44,29 @@ export function ChatInterface({
   setShowGeogebra?: (show: boolean) => void
   onRequestAIFix?: (message: Message | { role: 'user' | 'assistant', content: string }) => Promise<string | null | undefined>
 }) {
-  // 从store获取对话数据
+  // 从 store 获取对话数据
   const conversations = useAppStore((state) => state.conversations)
   const activeConversationId = useAppStore((state) => state.activeConversationId)
   const setActiveConversation = useAppStore((state) => state.setActiveConversation)
+  const config = useAppStore((state) => state.config)
+
+  // 获取模型显示名称
+  const getModelDisplayName = useCallback(() => {
+    const modelType = config?.modelType || 'gpt-4o'
+    const modelNames: Record<string, string> = {
+      'gpt-4o': 'GPT-4o',
+      'gpt-4': 'GPT-4',
+      'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+      'claude-3-opus': 'Claude 3 Opus',
+      'claude-3-sonnet': 'Claude 3 Sonnet',
+      'claude-3-haiku': 'Claude 3 Haiku',
+      'deepseek-chat': 'DeepSeek Chat',
+      'deepseek-coder': 'DeepSeek Coder',
+      'zzseek': 'ZZSeek',
+      'llama-3': 'Llama 3',
+    }
+    return modelNames[modelType] || modelType
+  }, [config?.modelType])
 
   // 添加自定义提交处理函数，以便添加调试日志
   const onSubmitWithDebug = useCallback(
@@ -401,24 +421,34 @@ ${message.content}`
         <CardHeader className="border-b p-4 flex-shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex-1 lg:hidden">
-              <select
-                className="w-full p-2 bg-background border rounded-md"
-                value={activeConversationId}
-                onChange={(e) => {
-                  console.debug("切换对话:", {
-                    newConversation: e.target.value,
-                  })
-                  setActiveConversation(e.target.value)
-                }}
-              >
-                {conversations.map((conv) => (
-                  <option key={conv.id} value={conv.id}>
-                    {conv.title}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  className="flex-1 p-2 bg-background border rounded-md"
+                  value={activeConversationId}
+                  onChange={(e) => {
+                    console.debug("切换对话:", {
+                      newConversation: e.target.value,
+                    })
+                    setActiveConversation(e.target.value)
+                  }}
+                >
+                  {conversations.map((conv) => (
+                    <option key={conv.id} value={conv.id}>
+                      {conv.title}
+                    </option>
+                  ))}
+                </select>
+                <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                  {getModelDisplayName()}
+                </Badge>
+              </div>
             </div>
-            <CardTitle className="text-xl hidden lg:block">对话</CardTitle>
+            <div className="hidden lg:flex items-center gap-2">
+              <CardTitle className="text-xl">对话</CardTitle>
+              <Badge variant="secondary" className="text-xs">
+                {getModelDisplayName()}
+              </Badge>
+            </div>
             <div className="flex gap-2"></div>
           </div>
         </CardHeader>

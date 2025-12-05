@@ -1,7 +1,10 @@
 /**
  * GeoGebra 命令验证器
  * 用于检测 AI 生成的 GeoGebra 命令中的语法错误并提供修复建议
+ * 集成基于 parsed_commands.json 的精确语法验证
  */
+
+import { validateCommandSyntax as syntaxValidate, isValidCommand } from './geogebra-syntax-validator'
 
 export interface ValidationIssue {
   severity: 'error' | 'warning' | 'info';
@@ -254,7 +257,23 @@ export function validateCommand(command: string): ValidationIssue[] {
     return [];
   }
   
-  // 1. 检查常见错误模式（避免重复检测）
+  // 1. 首先执行基于 parsed_commands.json 的精确语法验证
+  try {
+    const syntaxIssues = syntaxValidate(trimmedCmd);
+    if (syntaxIssues.length > 0) {
+      issues.push(...syntaxIssues);
+      // 如果有严重错误，可能不需要继续检查格式问题
+      const hasError = syntaxIssues.some(i => i.severity === 'error');
+      if (hasError) {
+        return issues;
+      }
+    }
+  } catch (error) {
+    // 语法验证器出错，继续使用原有验证
+    console.warn('[Validator] Syntax validator error:', error);
+  }
+  
+  // 2. 检查常见错误模式（避免重复检测）
   const detectedPatterns = new Set<string>();
   
   for (const errorPattern of ERROR_PATTERNS) {
@@ -290,7 +309,7 @@ export function validateCommand(command: string): ValidationIssue[] {
     }
   }
   
-  // 2. 执行语法特定检查
+  // 3. 执行语法特定检查
   for (const syntaxCheck of SYNTAX_CHECKS) {
     const issue = syntaxCheck.check(trimmedCmd);
     if (issue) {
@@ -298,7 +317,7 @@ export function validateCommand(command: string): ValidationIssue[] {
     }
   }
   
-  // 3. 后处理检查（避免误报）
+  // 4. 后处理检查（避免误报）
   for (const postCheck of POST_VALIDATION_CHECKS) {
     const issue = postCheck.check(trimmedCmd, issues);
     if (issue) {

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChatInterface } from "@/components/chat-interface"
 import { Toast } from "@/components/toast"
 import { GeogebraPanel } from "@/components/geogebra-panel"
+import { CommandHelpPanel } from "@/components/command-help-panel"
 import { useAppStore, convertChatMessagesToStore, convertStoreMessagesToChat, EMPTY_MESSAGES_ARRAY, type Message } from "@/lib/store"
 import { 
   logGeoGebraStatus
@@ -383,6 +384,7 @@ export default function ChatPage() {
               <div className="flex items-center p-2 border-b">
                 <TabsList className="flex-1">
                   <TabsTrigger value="chat">对话</TabsTrigger>
+                  <TabsTrigger value="help">命令</TabsTrigger>
                   <TabsTrigger value="settings">设置</TabsTrigger>
                 </TabsList>
                 <Button
@@ -408,6 +410,15 @@ export default function ChatPage() {
                   handleSubmit={handleChatSubmit}
                   isLoading={isLoading}
                   error={chatError}
+                />
+              </TabsContent>
+
+              <TabsContent value="help" className="h-[calc(100vh-112px)] overflow-auto">
+                <CommandHelpPanel 
+                  onInsertCommand={(cmd) => {
+                    // 将命令插入到输入框
+                    handleInputChange({ target: { value: input + (input ? '\n' : '') + cmd } } as any)
+                  }}
                 />
               </TabsContent>
 
@@ -519,6 +530,10 @@ export default function ChatPage() {
             onDebug={() => {
               const status = logGeoGebraStatus()
               alert(JSON.stringify(status, null, 2))
+            }}
+            onInsertCommand={(cmd) => {
+              // 将命令插入到聊天输入框
+              handleInputChange({ target: { value: input + (input ? '\n' : '') + cmd } } as any)
             }}
           />
         )}
