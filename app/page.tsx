@@ -44,25 +44,19 @@ export default function ChatPage() {
   const sidebarOpen = useAppStore((state) => state.sidebarOpen)
   const showGeogebra = useAppStore((state) => state.showGeogebra)
 
-  // 使用useRef和useEffect来获取消息，避免直接在渲染中访问可能导致的问题
-  const storeMessagesRef = useRef<any[]>([])
-  useEffect(() => {
-    storeMessagesRef.current = useAppStore.getState().messages[activeConversationId] || []
-  }, [activeConversationId])
-
   // 本地UI状态
   const [configOpen, setConfigOpen] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
-  const [localMessages, setLocalMessages] = useState<any[]>([])
 
-  // 当activeConversationId变化时，更新本地消息
-  useEffect(() => {
+  // 获取当前对话的消息 - 使用选择器避免不必要的重新渲染
+  const currentMessages = useAppStore((state) => state.messages[activeConversationId] || [])
+
+  // 使用useMemo缓存初始消息和配置,避免每次渲染都创建新对象
+  // 注意: 只在 activeConversationId 改变时重新计算,而不是每次 currentMessages 改变时
+  const initialMessages = useMemo(() => {
     const messages = useAppStore.getState().messages[activeConversationId] || []
-    setLocalMessages(messages)
+    return convertStoreMessagesToChat(messages)
   }, [activeConversationId])
-
-  // 使用useMemo缓存初始消息和配置，避免每次渲染都创建新对象
-  const initialMessages = useMemo(() => convertStoreMessagesToChat(localMessages), [localMessages])
 
   const chatConfig = useMemo(
     () => ({
@@ -91,13 +85,10 @@ export default function ChatPage() {
   )
 
   const onFinish = useCallback(
-    (message: any, messages: any[]) => {
+    (message: any) => {
       logger.info("聊天完成", { messageLength: message.content.length })
-      // 将新消息保存到store
-      const updatedMessages = convertChatMessagesToStore(messages)
-      useAppStore.getState().setMessages(activeConversationId, updatedMessages)
     },
-    [activeConversationId],
+    [],
   )
 
   const onError = useCallback(
@@ -107,7 +98,7 @@ export default function ChatPage() {
     [handleError],
   )
 
-  // 初始化聊天钩子
+  // 初始化聊天钩子 - 使用 key 强制重新初始化
   const {
     messages,
     input,
@@ -116,14 +107,30 @@ export default function ChatPage() {
     isLoading,
     error: chatError,
   } = useChat({
+    key: activeConversationId, // 关键: 使用 key 确保切换对话时重新初始化
     id: activeConversationId,
     api: "/api/chat",
     body: chatConfig,
     initialMessages,
     onResponse,
-    onFinish: (message) => onFinish(message, messages),
+    onFinish,
     onError,
   })
+
+  // 同步 useChat 的消息到 store
+  useEffect(() => {
+    if (messages.length > 0) {
+      const storeMessages = convertChatMessagesToStore(messages)
+      const currentStoreMessages = useAppStore.getState().messages[activeConversationId] || []
+      
+      // 只有当消息数量或最后一条消息内容不同时才更新
+      if (storeMessages.length !== currentStoreMessages.length || 
+          (storeMessages.length > 0 && currentStoreMessages.length > 0 &&
+           storeMessages[storeMessages.length - 1].content !== currentStoreMessages[currentStoreMessages.length - 1].content)) {
+        useAppStore.getState().setMessages(activeConversationId, storeMessages)
+      }
+    }
+  }, [messages, activeConversationId])
 
   // 处理聊天错误
   useEffect(() => {

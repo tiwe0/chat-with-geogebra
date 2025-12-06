@@ -1,8 +1,17 @@
 # 🎨 Chat with GeoGebra
 
-(⚠️本项目因作者找到了一周加班五天的工作而丧失了维护能力，虽然作者已经畅想出了详细的后续更新计划和宏伟的商业版图。如果您觉得您有能力让这个项目更好，请联系作者)
+~~(⚠️本项目因作者找到了一周加班五天的工作而丧失了维护能力，虽然作者已经畅想出了详细的后续更新计划和宏伟的商业版图。如果您觉得您有能力让这个项目更好，请联系作者)~~
+
+（最近闲下来了，加上总有老师希望这个项目继续完善下去，所以又回来继续做做）
 
 使用自然语言交流，辅助绘制 GeoGebra 图像的轻量工具。
+
+## TODO List
+
+- [ ] 基于ast的geogebra5.2语法解析器，用于给大模型提供语法错误反馈 （working）
+- [ ] 基于语法解析器的自我纠正mcp
+- [ ] 上传图片直接绘图解题
+- [x] 更稳定的客户端而非网页端（见Release）
 
 ## 🛠️ 项目简介
 
@@ -49,10 +58,10 @@ git clone https://github.com/tiwe0/chat-with-geogebra.git
 cd chat-with-geogebra 
 
 # 安装依赖
-npm install
+pnpm install
 
 # 运行开发环境
-npm run dev
+pnpm dev
 ```
 
  ⚡ 注意：需要自行准备 Claude、ChatGPT、DeepSeek 等服务的 API Key。
