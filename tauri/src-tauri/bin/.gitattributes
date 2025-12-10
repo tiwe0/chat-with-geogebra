@@ -1,0 +1,2 @@
+nodejs-aarch64-apple-darwin filter=lfs diff=lfs merge=lfs -text
+nodejs-x86_64-pc-windows-msvc.exe filter=lfs diff=lfs merge=lfs -text

@@ -27,7 +27,7 @@ echo "Copying static assets..."
 cp -r "$SCRIPT_DIR/../next/.next/static" "$SCRIPT_DIR/../next/.next/standalone/.next/"
 
 echo "Copying standalone files into tauri..."
-cp -r "$SCRIPT_DIR/../next/.next/standalone/"* "$SCRIPT_DIR/../tauri/standalone/"
+cp -r "$SCRIPT_DIR/../next/.next/standalone" "$SCRIPT_DIR/../tauri/standalone"
 
 cd "$SCRIPT_DIR/../tauri"
 

@@ -26,7 +26,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "msi",
+    "targets": ["msi", "dmg"],
     "resources": [
       "../standalone/**/*"
     ],
