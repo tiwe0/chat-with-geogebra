@@ -8,8 +8,7 @@
 
 ## TODO List
 
-- [ ] 基于geogebra command lint的语法检测(working)
-- [ ] 自我修正的mcp
+- [x] 自我修正的mcp
 - [ ] 上传应用题照片自动绘图
 - [x] 桌面客户端 (初步框架完成，后续再更新)
 
@@ -51,7 +50,7 @@
 
 ## 🖼️ 预览截图
 
-![预览图](./docs/preview.jpg)  
+![预览图](./docs/preview.png)  
 
 ## 🚀 应用
 
