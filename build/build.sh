@@ -25,9 +25,14 @@ fi
 
 echo "Copying static assets..."
 cp -r "$SCRIPT_DIR/../next/.next/static" "$SCRIPT_DIR/../next/.next/standalone/.next/"
+cp -r "$SCRIPT_DIR/../next/public" "$SCRIPT_DIR/../next/.next/standalone/"
 
 echo "Copying standalone files into tauri..."
 mv "$SCRIPT_DIR/../next/.next/standalone" "$SCRIPT_DIR/../tauri/standalone"
+
+# 处理该死的 styled-jsx
+rm -rf "$SCRIPT_DIR/../tauri/standalone/node_modules/styled-jsx"
+cp -r "$SCRIPT_DIR/../tauri/standalone/node_modules/.pnpm/styled-jsx@5.1.6_react@19.2.3/node_modules/styled-jsx" "$SCRIPT_DIR/../tauri/standalone/node_modules/"
 
 cd "$SCRIPT_DIR/../tauri"
 
